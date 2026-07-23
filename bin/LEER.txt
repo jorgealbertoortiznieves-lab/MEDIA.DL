@@ -1,0 +1,1 @@
+Coloca aquí los ejecutables yt-dlp.exe, gallery-dl-app.exe y el archivo config1.json para que la app funcione correctamente.
