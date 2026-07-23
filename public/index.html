@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEDIA.DL - Terminal Dashboard</title>
+    <link rel="stylesheet" href="style.css?v=19">
+</head>
+<body>
+    <div class="terminal-window">
+        <!-- Terminal Window Titlebar -->
+        <header class="terminal-header">
+            <div class="window-title">MEDIA.DL</div>
+            <div class="window-controls">
+                <button id="btn-settings" class="term-settings-btn" title="Ajustes">[ CONFIG ]</button>
+                <span class="control-dot dot-minimize"></span>
+                <span class="control-dot dot-maximize"></span>
+                <span class="control-dot dot-close"></span>
+            </div>
+        </header>
+
+        <!-- Terminal Splits -->
+        <div class="terminal-body" style="grid-template-columns: 1fr;">
+            <!-- Main Pane: Command Line and Logs -->
+            <main class="main-pane" style="border-right: none;">
+                <!-- Main ASCII Logo -->
+                <div id="logoContainer" style="flex-grow: 1; display: flex; align-items: center; justify-content: center;">
+                    <div id="mainLogo" class="log-line log-info" style="font-size: 11px; line-height: 1.2; white-space: pre; text-align: center;">
+███╗   ███╗███████╗██████╗ ██╗ █████╗     ██████╗ ██╗     
+████╗ ████║██╔════╝██╔══██╗██║██╔══██╗    ██╔══██╗██║     
+██╔████╔██║█████╗  ██║  ██║██║███████║    ██║  ██║██║     
+██║╚██╔╝██║██╔══╝  ██║  ██║██║██╔══██║    ██║  ██║██║     
+██║ ╚═╝ ██║███████╗██████╔╝██║██║  ██║██╗ ██████╔╝███████╗
+╚═╝     ╚═╝╚══════╝╚═════╝ ╚═╝╚═╝  ╚═╝╚═╝ ╚═════╝ ╚══════╝
+                    </div>
+                </div>
+
+                <!-- Input command line -->
+                <div class="console-actions" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 25px; padding: 30px; background: rgba(0,0,0,0.4); border-top: 1px solid var(--border-color);">
+                    <!-- Descarga Rapida -->
+                    <div style="width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; gap: 15px;">
+                        <span style="color: var(--text-secondary); font-size: 13px; font-weight: bold; letter-spacing: 1px;">&gt;_ DESCARGA RAPIDA</span>
+                        <div class="engine-switch-container">
+                            <span id="autoLabel" class="switch-label active-auto">AUTO</span>
+                            <label class="switch">
+                                <input type="checkbox" id="modeSwitch">
+                                <span class="slider"></span>
+                            </label>
+                            <div class="manual-engines" id="manualEngines">
+                                <button class="engine-btn" id="btn-gdl">gallery-dl</button>
+                                <button class="engine-btn" id="btn-yt">yt-dlp</button>
+                            </div>
+                        </div>
+                        <textarea class="console-input" id="consoleInput" placeholder="Pega los enlaces aqu&iacute; (uno por l&iacute;nea)..." autocomplete="off" rows="4" style="resize: vertical; border-radius: 6px; padding: 10px; font-family: monospace; background: rgba(0,0,0,0.5); width: 100%; box-sizing: border-box;"></textarea>
+                        <div style="display: flex; gap: 15px;">
+                            <button class="console-send-btn" id="consoleSendBtn" style="padding: 10px 30px;">DESCARGAR</button>
+                            <button class="console-send-btn clear-btn" id="clearGridBtn" style="padding: 10px; color: var(--term-red); border-color: var(--term-red);" title="Limpiar Terminal">🗑️</button>
+                        </div>
+                        <div id="downloadsGrid" class="downloads-grid hidden"></div>
+                    </div>
+
+                    <!-- Archivo TXT -->
+                    <div style="width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; gap: 15px; padding-top: 40px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <span style="color: var(--text-secondary); font-size: 13px; font-weight: bold; letter-spacing: 1px;">&gt;_ DESCARGAR POR LOTES (.TXT)</span>
+                        <div style="display: flex; gap: 15px; align-items: center; justify-content: center; margin-top: 10px;">
+                            <button class="console-send-btn" id="btnSelectTxtFile" style="background: rgba(255,255,255,0.1);">SELECCIONAR ARCHIVO</button>
+                            <span id="txtFileLabel" style="color: var(--text-primary); font-size: 12px; word-break: break-all;">Ning&uacute;n archivo...</span>
+                        </div>
+                        <div style="display: flex; gap: 15px;">
+                            <button class="console-send-btn" id="consoleTxtBtn" style="padding: 10px 30px;">DESCARGAR</button>
+                            <button class="console-send-btn clear-btn" id="clearGridTxtBtn" style="padding: 10px; color: var(--term-red); border-color: var(--term-red);" title="Limpiar Terminal">🗑️</button>
+                        </div>
+                        <div id="downloadsGridTxt" class="downloads-grid hidden"></div>
+                    </div>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settings-modal" class="modal-backdrop">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 style="color: var(--text-primary); margin: 0;">Ajustes</h2>
+                <button id="btn-close-settings" class="btn-close">&times;</button>
+            </div>
+            
+            <div class="config-editor" style="background: transparent; border: none; padding: 0; margin-top: 20px; max-height: 60vh; overflow-y: auto;">
+                <h3 style="color: var(--accent-blue); margin-bottom: 15px; font-size: 14px; letter-spacing: 1px;">--- OPCIONES GLOBALES ---</h3>
+                
+                <!-- Carpeta Destino -->
+                <div class="config-item">
+                    <span class="config-key">"output_directory":</span>
+                    <div style="display:flex; gap:10px; width:100%">
+                        <input type="text" class="config-input" id="configPath" value="C:\Users\jorge\Downloads\Media" style="flex-grow: 1;">
+                        <button id="btnSelectFolder" class="console-send-btn" style="padding: 0 15px;">ELEGIR...</button>
+                    </div>
+                </div>
+
+                <!-- Concurrent downloads -->
+                <div class="config-item">
+                    <span class="config-key">"max_concurrent_downloads":</span>
+                    <div style="display:flex; gap:10px; width:100%">
+                        <select class="config-select" id="configConcurrent" style="flex-grow: 1;">
+                            <option value="1">1</option>
+                            <option value="3" selected>3</option>
+                            <option value="5">5</option>
+                            <option value="10">10</option>
+                            <option value="custom">Personalizado...</option>
+                        </select>
+                        <input type="number" class="config-input hidden" id="configConcurrentCustom" min="1" max="100" style="width: 80px;" placeholder="Cant.">
+                    </div>
+                </div>
+
+                <h3 style="color: var(--accent-blue); margin: 25px 0 15px 0; font-size: 14px; letter-spacing: 1px;">--- MODO AUTOM&Aacute;TICO ---</h3>
+                <!-- Auto Priority -->
+                <div class="config-item">
+                    <span class="config-key">"auto_priority_engine":</span>
+                    <select class="config-select" id="configAutoPriority">
+                        <option value="gallery-dl" selected>"gallery-dl" (Recomendado)</option>
+                        <option value="yt-dlp">"yt-dlp"</option>
+                    </select>
+                </div>
+
+                <h3 style="color: var(--accent-blue); margin: 25px 0 15px 0; font-size: 14px; letter-spacing: 1px;">--- GESTOR DE COOKIES ---</h3>
+                <div class="config-item">
+                    <span class="config-key">"master_cookies":</span>
+                    <span class="config-help" style="color:#aaa; font-size:12px;">Los archivos que agregues se concatenar&aacute;n autom&aacute;ticamente y se enviar&aacute;n a los motores.</span>
+                    <button id="btnAddCookie" class="console-send-btn" style="margin-top: 5px;">+ AGREGAR COOKIES (.TXT)</button>
+                    <div id="cookieListContainer" class="cookie-list">
+                        <!-- Cookie items render here -->
+                    </div>
+                </div>
+
+                <h3 style="color: var(--accent-blue); margin: 25px 0 15px 0; font-size: 14px; letter-spacing: 1px;">--- CONFIGURACI&Oacute;N YT-DLP ---</h3>
+                <!-- Calidad por Defecto -->
+                <div class="config-item" id="configQualityGroup">
+                    <span class="config-key">"default_quality":</span>
+                    <select class="config-select" id="configQuality">
+                        <option value="best">"best"</option>
+                        <option value="2160p">"2160p (4K)"</option>
+                        <option value="1440p">"1440p (2K)"</option>
+                        <option value="1080p" selected>"1080p (FullHD)"</option>
+                        <option value="720p">"720p (HD)"</option>
+                        <option value="audio">"bestaudio (Solo Audio)"</option>
+                    </select>
+                </div>
+
+                <h3 style="color: var(--accent-blue); margin: 25px 0 15px 0; font-size: 14px; letter-spacing: 1px;">--- CONFIGURACI&Oacute;N GALLERY-DL ---</h3>
+                <div class="config-item" id="configGdlGroup">
+                    <span class="config-key">"organization":</span>
+                    <span class="config-help" style="margin-left:10px; color:#aaa; font-size:12px;">Autom&aacute;tica por defecto.</span>
+                </div>
+
+                <button class="save-config-btn" id="saveConfigBtn" style="margin-top: 20px;">GUARDAR CONFIG</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

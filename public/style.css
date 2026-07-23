@@ -1,0 +1,774 @@
+@import url('https://fonts.googleapis.com/css2?family=Fira+Code:wght@300;400;500;600;700&display=swap');
+
+:root {
+    --bg-color: #080710;
+    --term-bg: #0c0b16;
+    --term-header: #171526;
+    --border-color: rgba(0, 242, 254, 0.15);
+    --border-focus: rgba(0, 242, 254, 0.4);
+    
+    --text-primary: #dcd7ec;
+    --text-muted: #6e6782;
+    
+    /* Terminal ANSI Colors (Neon versions) */
+    --term-green: #39ff14;
+    --term-cyan: #00f2fe;
+    --term-purple: #bd00ff;
+    --term-red: #ff3366;
+    --term-yellow: #ffb300;
+    --term-white: #ffffff;
+    
+    --accent-blue: #0088ff;
+    --accent-gradient: linear-gradient(135deg, #00f2fe, #bd00ff);
+    --glow-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+    --transition-speed: 0.2s;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Fira Code', 'Consolas', monospace;
+}
+
+body {
+    background-color: var(--bg-color);
+    background-image: radial-gradient(circle at 50% 50%, #17122e 0%, #080710 100%);
+    color: var(--text-primary);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Contenedor del Emulador de Terminal */
+.terminal-window {
+    width: 100%;
+    max-width: 100%;
+    height: 100vh;
+    background-color: var(--term-bg);
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    backdrop-filter: blur(10px);
+}
+
+/* Cabecera de la Ventana */
+.terminal-header {
+    background-color: var(--term-header);
+    height: 45px;
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    position: relative;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    flex-shrink: 0;
+}
+
+.window-controls {
+    display: flex;
+    gap: 8px;
+}
+
+.control-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+}
+
+.dot-close { background-color: var(--term-red); }
+.dot-minimize { background-color: var(--term-yellow); }
+.dot-maximize { background-color: var(--term-green); }
+
+.window-title {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--term-cyan);
+    text-shadow: 0 0 8px rgba(0, 242, 254, 0.4);
+    letter-spacing: 0.5px;
+}
+
+/* Cuerpo de la Ventana en Paneles (Split Screen) */
+.terminal-body {
+    display: flex;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+/* Panel Izquierdo (Procesos y Consola) */
+.main-pane {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    border-right: 1px solid rgba(255, 255, 255, 0.05);
+    padding: 20px;
+    overflow: hidden;
+}
+
+/* Panel Derecho (Configuración config.json) */
+.sidebar-pane {
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    background: rgba(0, 0, 0, 0.15);
+    overflow-y: auto;
+}
+
+.pane-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--term-cyan);
+    margin-bottom: 15px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px dashed rgba(255, 255, 255, 0.1);
+    padding-bottom: 8px;
+}
+
+/* Área de Salida de Consola (Stdout Logs) */
+.console-output {
+    flex-grow: 1;
+    overflow-y: auto;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 20px;
+    padding-right: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Colores de Logs de Consola */
+.log-line {
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+
+.log-prompt { color: var(--term-purple); }
+.log-success { color: var(--term-green); }
+.log-info { color: var(--term-cyan); }
+.log-warning { color: var(--term-yellow); }
+.log-error { color: var(--term-red); }
+.log-muted { color: var(--text-muted); }
+
+/* Prompts Interactivos */
+.console-input-line {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: rgba(255, 255, 255, 0.02);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 15px;
+    flex-shrink: 0;
+    transition: all var(--transition-speed);
+}
+
+.console-input-line:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 15px rgba(0, 242, 254, 0.1);
+}
+
+.prompt-symbol {
+    color: var(--term-green);
+    font-weight: bold;
+}
+
+.prompt-path {
+    color: var(--term-purple);
+}
+
+.console-input {
+    flex-grow: 1;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--term-white);
+    font-size: 14px;
+    font-family: inherit;
+}
+
+.console-send-btn {
+    background: transparent;
+    border: 1px solid var(--term-cyan);
+    color: var(--term-cyan);
+    padding: 6px 16px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 13px;
+    transition: all var(--transition-speed);
+}
+
+.console-send-btn:hover {
+    background: var(--term-cyan);
+    color: var(--term-bg);
+    box-shadow: var(--glow-shadow);
+}
+
+.clear-btn:hover {
+    background: var(--term-red) !important;
+    color: var(--term-bg) !important;
+    box-shadow: 0 0 15px rgba(255, 51, 102, 0.4) !important;
+}
+
+/* Vista de config.json en el Panel Lateral */
+.config-editor {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+}
+
+.config-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.config-key {
+    color: var(--term-purple);
+    font-size: 13px;
+}
+
+.config-value-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.config-input {
+    background: rgba(255, 255, 255, 0.03);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: var(--term-green);
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    transition: all var(--transition-speed);
+}
+
+.config-input:focus {
+    border-color: var(--border-focus);
+}
+
+.config-select {
+    background: var(--term-bg);
+    border: none;
+    padding: 8px 12px;
+    border-radius: 6px;
+    color: var(--term-cyan);
+    font-size: 13px;
+    width: 100%;
+    outline: none;
+    cursor: pointer;
+}
+
+.config-toggle-btn {
+    background: rgba(255, 255, 255, 0.03);
+    border: none;
+    color: var(--term-yellow);
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 13px;
+    cursor: pointer;
+    width: 100%;
+    text-align: left;
+    transition: all var(--transition-speed);
+}
+
+.config-toggle-btn:hover {
+    border-color: var(--border-focus);
+    background: rgba(255, 255, 255, 0.06);
+}
+
+.config-help {
+    font-size: 11px;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+/* Botón Guardar Config */
+.save-config-btn {
+    margin-top: 15px;
+    background: transparent;
+    border: 1px solid var(--term-green);
+    color: var(--term-green);
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    transition: all var(--transition-speed);
+}
+
+.save-config-btn:hover {
+    background: var(--term-green);
+    color: var(--term-bg);
+    box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+}
+
+/* Personalización del Scrollbar */
+::-webkit-scrollbar {
+    width: 6px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.08);
+    border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.15);
+}
+
+/* Animación de cursor parpadeante */
+@keyframes blink {
+    50% { opacity: 0; }
+}
+
+.cursor {
+    display: inline-block;
+    width: 8px;
+    height: 15px;
+    background-color: var(--term-cyan);
+    animation: blink 1s infinite;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+
+
+/* --- ELECTRON SPECIFIC --- */
+.terminal-header {
+    -webkit-app-region: drag;
+}
+
+.window-controls {
+    -webkit-app-region: no-drag;
+}
+.control-dot {
+    cursor: pointer;
+}
+
+/* Modal Styles */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal-content {
+    background: var(--bg-gradient);
+    border: none;
+    border-radius: 16px;
+    padding: 30px;
+    width: 90%;
+    max-width: 600px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: none;
+    padding-bottom: 15px;
+}
+
+.btn-close {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-size: 24px;
+    cursor: pointer;
+}
+.btn-close:hover {
+    color: #ef4444;
+}
+
+.hidden { display: none !important; }
+
+/* Move window controls to the right */
+.window-controls {
+    margin-left: auto; /* Push to right */
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.terminal-header {
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+    background: transparent;
+    border-bottom: none;
+}
+.window-title {
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: var(--term-cyan);
+    flex-grow: 1; /* Take up space */
+}
+
+body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+}
+
+.term-settings-btn {
+    background: transparent;
+    border: none;
+    color: var(--text-secondary);
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 15px;
+    letter-spacing: 1px;
+}
+.term-settings-btn:hover {
+    color: var(--accent-cyan);
+    text-shadow: 0 0 8px var(--accent-cyan);
+}
+
+.config-toggle-btn {
+    justify-content: center !important;
+    text-align: center !important;
+    font-size: 16px !important;
+    letter-spacing: 2px !important;
+}
+
+.modal-backdrop {
+    pointer-events: none;
+    transition: all 0.3s ease !important;
+}
+.modal-backdrop.show {
+    pointer-events: auto;
+}
+.modal-content {
+    border: 1px solid rgba(0,255,255,0.1) !important;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.8) !important;
+}
+
+.modal-backdrop {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+}
+.modal-backdrop.show {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+}
+.modal-content {
+    transform: scale(0.8) translateY(-30px);
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+    border: 2px solid var(--accent-cyan) !important;
+    box-shadow: 0 0 40px rgba(0, 255, 255, 0.4), inset 0 0 20px rgba(0, 255, 255, 0.2) !important;
+}
+.modal-backdrop.show .modal-content {
+    transform: scale(1) translateY(0);
+}
+
+.mini-console {
+    width: 100%;
+    max-height: 200px;
+    overflow-y: auto;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 15px;
+    margin-top: 15px;
+    text-align: left;
+    box-sizing: border-box;
+    font-family: 'Courier New', Courier, monospace;
+}
+.mini-console.hidden {
+    display: none !important;
+}
+.mini-console::-webkit-scrollbar {
+    width: 6px;
+}
+.mini-console::-webkit-scrollbar-track {
+    background: rgba(255,255,255,0.05);
+}
+.mini-console::-webkit-scrollbar-thumb {
+    background: rgba(0, 255, 255, 0.3);
+    border-radius: 3px;
+}
+
+/* Download Cards UI */
+.downloads-grid {
+    width: 100%;
+    max-height: 400px;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.7);
+    border: 1px solid rgba(0, 255, 255, 0.2);
+    border-radius: 6px;
+    box-sizing: border-box;
+}
+.downloads-grid.hidden {
+    display: none !important;
+}
+
+.dl-card {
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.3);
+    transition: border-color 0.3s ease;
+}
+.dl-card.success-card { border-color: var(--term-green); }
+.dl-card.error-card { border-color: var(--term-red); }
+
+.dl-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    cursor: pointer;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    user-select: none;
+}
+.dl-card-header:hover {
+    background: rgba(255, 255, 255, 0.05);
+}
+
+.dl-url-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    max-width: 70%;
+}
+
+.dl-toggle-icon {
+    font-size: 10px;
+    color: var(--term-cyan);
+    transition: transform 0.3s ease;
+}
+.dl-toggle-icon.open {
+    transform: rotate(180deg);
+}
+
+.dl-card-body {
+    padding: 0 12px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.dl-url {
+    font-size: 12px;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.dl-status-badge {
+    font-size: 10px;
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+    letter-spacing: 0.5px;
+}
+.dl-status-badge.pending { background: rgba(255, 255, 255, 0.1); color: #ccc; }
+.dl-status-badge.running { background: rgba(0, 242, 254, 0.2); color: var(--term-cyan); border: 1px solid var(--term-cyan); }
+.dl-status-badge.success { background: rgba(57, 255, 20, 0.2); color: var(--term-green); border: 1px solid var(--term-green); }
+.dl-status-badge.error { background: rgba(255, 51, 102, 0.2); color: var(--term-red); border: 1px solid var(--term-red); }
+
+.dl-engine {
+    font-size: 10px;
+    color: var(--text-muted);
+}
+
+.dl-logs {
+    font-size: 11px;
+    color: var(--text-muted);
+    background: rgba(0,0,0,0.4);
+    padding: 8px;
+    border-radius: 4px;
+    max-height: 100px;
+    overflow-y: auto;
+    font-family: 'Courier New', Courier, monospace;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
+.dl-logs::-webkit-scrollbar { width: 4px; }
+.dl-logs::-webkit-scrollbar-thumb { background: rgba(0, 255, 255, 0.3); border-radius: 2px; }
+
+.dl-error-msg {
+    color: var(--term-red);
+    font-size: 11px;
+    font-weight: bold;
+    margin-top: 4px;
+}
+
+/* Engine Switch Styles */
+.engine-switch-container {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 8px 20px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.switch-label {
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-muted);
+    transition: all 0.3s ease;
+}
+.switch-label.active-auto {
+    color: var(--term-cyan);
+    text-shadow: 0 0 10px var(--term-cyan);
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: var(--term-cyan);
+    transition: .4s;
+    border-radius: 24px;
+}
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 4px;
+    bottom: 4px;
+    background-color: #000;
+    transition: .4s;
+    border-radius: 50%;
+}
+input:checked + .slider {
+    background-color: rgba(255,255,255,0.2);
+}
+input:checked + .slider:before {
+    transform: translateX(26px);
+    background-color: var(--term-cyan);
+}
+
+.manual-engines {
+    display: flex;
+    gap: 5px;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: all 0.3s ease;
+}
+.manual-engines.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+.engine-btn {
+    background: transparent;
+    border: 1px solid var(--text-muted);
+    color: var(--text-muted);
+    padding: 4px 10px;
+    border-radius: 4px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.engine-btn:hover {
+    border-color: var(--term-cyan);
+    color: var(--term-cyan);
+}
+.engine-btn.selected {
+    background: var(--term-cyan);
+    color: #000;
+    border-color: var(--term-cyan);
+/* Cookie Manager UI */
+.cookie-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 10px;
+    max-height: 150px;
+    overflow-y: auto;
+}
+.cookie-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255,255,255,0.05);
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+.cookie-item-info {
+    display: flex;
+    flex-direction: column;
+}
+.cookie-item-name {
+    color: var(--term-cyan);
+    font-size: 12px;
+    font-weight: bold;
+}
+.cookie-item-path {
+    color: var(--text-muted);
+    font-size: 10px;
+    word-break: break-all;
+}
+.cookie-delete-btn {
+    background: rgba(255, 51, 102, 0.2);
+    border: 1px solid var(--term-red);
+    color: var(--term-red);
+    padding: 4px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 11px;
+    transition: all 0.2s ease;
+}
+.cookie-delete-btn:hover {
+    background: var(--term-red);
+    color: #fff;
+}
+
