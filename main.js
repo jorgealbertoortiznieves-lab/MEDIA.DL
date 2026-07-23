@@ -198,9 +198,9 @@ function runProcess(executable, args, id, event, prefix) {
 
 // Unified IPC handler to start a single download item
 ipcMain.on('start-download-item', async (event, { id, link, engine, downloadDir, format, quality, autoPriority }) => {
-    const ytDlpPath = './bin/yt-dlp.exe';
-    const gdlPath = './bin/gallery-dl-app.exe';
-    const gdlConfigPath = './bin/config1.json';
+    const ytDlpPath = 'C:\\Users\\jorge\\OneDrive\\Documentos\\Jorge\\Multimedia\\yt-dlp\\yt-dlp.exe';
+    const gdlPath = 'C:\\Users\\jorge\\OneDrive\\Documentos\\Jorge\\Multimedia\\Gallery-dl\\gallery-dl-app.exe';
+    const gdlConfigPath = 'C:\\Users\\jorge\\OneDrive\\Documentos\\Jorge\\Multimedia\\Gallery-dl\\config1.json';
 
     const getGdlArgs = () => {
         let args = ['-d', downloadDir, '--config', gdlConfigPath];
@@ -311,3 +311,42 @@ function extractYtError(output) {
     }
     return null;
 }
+
+ipcMain.handle('update-engines', async () => {
+    const { exec } = require('child_process');
+    const util = require('util');
+    const execPromise = util.promisify(exec);
+    const ytDlpPath = 'C:\\\\Users\\\\jorge\\\\OneDrive\\\\Documentos\\\\Jorge\\\\Multimedia\\\\yt-dlp\\\\yt-dlp.exe';
+    const gdlPath = 'C:\\\\Users\\\\jorge\\\\OneDrive\\\\Documentos\\\\Jorge\\\\Multimedia\\\\Gallery-dl\\\\gallery-dl-app.exe';
+
+    let ytResult = '';
+    let gdlResult = '';
+    let wasUpdated = false;
+
+    try {
+        const yt = await execPromise(`"${ytDlpPath}" -U --no-check-certificate`);
+        ytResult = yt.stdout + yt.stderr;
+        if (ytResult.toLowerCase().includes('updated')) wasUpdated = true;
+    } catch (e) {
+        ytResult = (e.stdout || '') + (e.stderr || '') + e.message;
+        if (ytResult.toLowerCase().includes('updated')) wasUpdated = true;
+    }
+
+    try {
+        const gdl = await execPromise(`"${gdlPath}" -U`);
+        gdlResult = gdl.stdout + gdl.stderr;
+        if (gdlResult.toLowerCase().includes('updated') || gdlResult.toLowerCase().includes('actualizado') || gdlResult.toLowerCase().includes('success') || gdlResult.toLowerCase().includes('installed')) wasUpdated = true;
+    } catch (e) {
+        gdlResult = (e.stdout || '') + (e.stderr || '') + e.message;
+        if (gdlResult.toLowerCase().includes('updated') || gdlResult.toLowerCase().includes('actualizado') || gdlResult.toLowerCase().includes('success') || gdlResult.toLowerCase().includes('installed')) wasUpdated = true;
+    }
+
+    if (wasUpdated) {
+        setTimeout(() => {
+            app.relaunch();
+            app.exit();
+        }, 3000);
+    }
+
+    return { wasUpdated, ytResult, gdlResult };
+});

@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const configPath = document.getElementById('configPath');
     const btnSelectFolder = document.getElementById('btnSelectFolder');
+    const btnUpdateEngines = document.getElementById('btnUpdateEngines');
     const configEngineBtn = document.getElementById('configEngineBtn');
     const configQuality = document.getElementById('configQuality');
     const configConcurrent = document.getElementById('configConcurrent');
@@ -46,7 +47,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // State
     let currentEngine = localStorage.getItem('term_engine') || 'yt-dlp';
-    let currentFolder = localStorage.getItem('term_folder') || 'C:\Downloads\Media';
+    let currentFolder = localStorage.getItem('term_folder') || 'C:\\Downloads\\Media';
     let currentQuality = localStorage.getItem('term_quality') || 'best';
     let currentConcurrent = localStorage.getItem('term_concurrent') || '3';
     let currentAutoPriority = localStorage.getItem('term_auto_priority') || 'gallery-dl';
@@ -140,6 +141,28 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    if(btnUpdateEngines) {
+        btnUpdateEngines.addEventListener('click', async () => {
+            const statusSpan = document.getElementById('updateEnginesStatus');
+            btnUpdateEngines.disabled = true;
+            btnUpdateEngines.innerText = 'ACTUALIZANDO...';
+            statusSpan.innerText = 'Buscando actualizaciones para yt-dlp y gallery-dl...';
+            statusSpan.style.color = 'var(--term-cyan)';
+
+            const { wasUpdated, ytResult, gdlResult } = await window.electronAPI.updateEngines();
+            
+            if (wasUpdated) {
+                statusSpan.innerText = '¡Actualización completada! Reiniciando aplicación en 3 segundos...';
+                statusSpan.style.color = '#0f0';
+            } else {
+                statusSpan.innerText = 'Ambos motores ya se encuentran en su última versión.';
+                statusSpan.style.color = '#0f0';
+                btnUpdateEngines.innerText = 'ACTUALIZAR MOTORES';
+                btnUpdateEngines.disabled = false;
+            }
+        });
+    }
+
     if(btnSelectTxtFile) {
         btnSelectTxtFile.addEventListener('click', async () => {
             const filePath = await window.electronAPI.openFileDialog();
@@ -201,7 +224,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Save Settings
     saveConfigBtn.addEventListener('click', () => {
-        currentFolder = configPath.value.trim() || 'C:\Downloads\Media';
+        currentFolder = configPath.value.trim() || 'C:\\Downloads\\Media';
         currentQuality = configQuality.value;
         
         if (configConcurrent.value === 'custom') {
