@@ -1,7 +1,4 @@
-# MEDIA.DL
 
-<div align="center">
-  <img src="assets/icon.png" alt="MEDIA.DL Icon" width="150"/>
   <h3>GALLERY-DL/YT-DLP UI</h3>
 </div>
 
