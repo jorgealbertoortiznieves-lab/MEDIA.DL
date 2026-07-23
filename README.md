@@ -8,7 +8,7 @@
 ![Screenshot](assets/screenshot.png)
 
 ## Descripción
-**MEDIA.DL** es una interfaz gráfica (GUI) robusta, oscura y futurista para realizar descargas masivas de videos, imágenes y audio desde cientos de sitios web, impulsada de forma transparente por **yt-dlp** y **gallery-dl**.
+**MEDIA.DL** es una interfaz gráfica (GUI) para realizar descargas masivas de videos, imágenes y audio desde cientos de sitios web, impulsada por **yt-dlp** y **gallery-dl**.
 
 ### ✨ Características Principales
 - **Modo AUTO:** Detección inteligente del enlace para usar el mejor motor disponible.
