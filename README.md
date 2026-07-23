@@ -2,7 +2,7 @@
 
 <div align="center">
   <img src="assets/icon.png" alt="MEDIA.DL Icon" width="150"/>
-  <h3>Aplicación de escritorio moderna para descargas multimedia</h3>
+  <h3>GALLERY-DL/YT-DLP UI</h3>
 </div>
 
 ![Screenshot](assets/screenshot.png)
