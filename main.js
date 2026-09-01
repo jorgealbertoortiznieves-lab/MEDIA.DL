@@ -1,11 +1,29 @@
-const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, Tray, Menu, Notification } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
-const { spawn } = require('child_process');
+const { spawn, exec } = require('child_process');
+
+let mainWindow = null;
+let tray = null;
+let isQuitting = false;
+
+// Bloqueo de instancia única para evitar múltiples procesos duplicados
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+    app.quit();
+} else {
+    app.on('second-instance', () => {
+        if (mainWindow) {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.show();
+            mainWindow.focus();
+        }
+    });
+}
 
 function createWindow() {
-    const win = new BrowserWindow({
+    mainWindow = new BrowserWindow({
         width: 600,
         height: 900,
         resizable: true,
@@ -21,37 +39,127 @@ function createWindow() {
         autoHideMenuBar: true
     });
 
-    win.loadFile('public/index.html');
+    mainWindow.loadFile('public/index.html');
+
+    // Interceptar el cierre para ocultar a la bandeja en lugar de matar la app
+    mainWindow.on('close', (event) => {
+        if (!isQuitting) {
+            event.preventDefault();
+            mainWindow.hide();
+            return false;
+        }
+    });
+}
+
+function createTray() {
+    if (tray) return;
+
+    const iconIco = path.join(__dirname, 'icon.ico');
+    const iconPng = path.join(__dirname, 'icon.png');
+    const trayIconPath = fs.existsSync(iconIco) ? iconIco : iconPng;
+
+    tray = new Tray(trayIconPath);
+
+    const contextMenu = Menu.buildFromTemplate([
+        {
+            label: 'MEDIA.DL v2.0',
+            enabled: false
+        },
+        { type: 'separator' },
+        {
+            label: 'Abrir MEDIA.DL',
+            click: () => {
+                if (mainWindow) {
+                    if (mainWindow.isMinimized()) mainWindow.restore();
+                    mainWindow.show();
+                    mainWindow.focus();
+                }
+            }
+        },
+        {
+            label: 'Ocultar en Segundo Plano',
+            click: () => {
+                if (mainWindow) {
+                    mainWindow.hide();
+                }
+            }
+        },
+        { type: 'separator' },
+        {
+            label: 'Abrir Carpeta de Descargas',
+            click: async () => {
+                const fallback = path.join(os.homedir(), 'Downloads');
+                await shell.openPath(fallback);
+            }
+        },
+        { type: 'separator' },
+        {
+            label: 'Salir de MEDIA.DL',
+            click: () => {
+                isQuitting = true;
+                app.quit();
+            }
+        }
+    ]);
+
+    tray.setToolTip('MEDIA.DL v2.0 - Activo en segundo plano');
+    tray.setContextMenu(contextMenu);
+
+    // Clic izquierdo: Alternar visibilidad
+    tray.on('click', () => {
+        if (!mainWindow) return;
+        if (mainWindow.isVisible()) {
+            mainWindow.hide();
+        } else {
+            if (mainWindow.isMinimized()) mainWindow.restore();
+            mainWindow.show();
+            mainWindow.focus();
+        }
+    });
+
+    // Doble clic: Abrir y enfocar
+    tray.on('double-click', () => {
+        if (!mainWindow) return;
+        if (mainWindow.isMinimized()) mainWindow.restore();
+        mainWindow.show();
+        mainWindow.focus();
+    });
 }
 
 ipcMain.on('window:minimize', () => {
-    const win = BrowserWindow.getFocusedWindow();
-    if (win) win.minimize();
+    if (mainWindow) mainWindow.minimize();
 });
 ipcMain.on('window:maximize', () => {
-    const win = BrowserWindow.getFocusedWindow();
-    if (win) {
-        if (win.isMaximized()) win.unmaximize();
-        else win.maximize();
+    if (mainWindow) {
+        if (mainWindow.isMaximized()) mainWindow.unmaximize();
+        else mainWindow.maximize();
     }
 });
 ipcMain.on('window:close', () => {
-    const win = BrowserWindow.getFocusedWindow();
-    if (win) win.close();
+    if (mainWindow) mainWindow.hide();
 });
 
 app.whenReady().then(() => {
     createWindow();
+    createTray();
 
     app.on('activate', () => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
+        } else if (mainWindow) {
+            mainWindow.show();
+            mainWindow.focus();
         }
     });
 });
 
+app.on('before-quit', () => {
+    isQuitting = true;
+});
+
 app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') {
+    // Mantenerse vivo en segundo plano en la bandeja de sistema
+    if (isQuitting && process.platform !== 'darwin') {
         app.quit();
     }
 });

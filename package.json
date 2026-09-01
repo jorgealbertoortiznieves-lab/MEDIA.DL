@@ -1,7 +1,7 @@
 {
   "name": "mediadl",
-  "version": "1.0.0",
-  "description": "",
+  "version": "2.0.0",
+  "description": "MEDIA.DL v2.0 - Background Multimedia Downloader (System Tray)",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
