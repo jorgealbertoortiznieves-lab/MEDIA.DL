@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEDIA.DL - Terminal Dashboard</title>
-    <link rel="stylesheet" href="style.css?v=19">
+    <link rel="stylesheet" href="style.css?v=22">
 </head>
 <body>
     <div class="terminal-window">
@@ -12,7 +12,12 @@
         <header class="terminal-header">
             <div class="window-title">MEDIA.DL</div>
             <div class="window-controls">
-                <button id="btn-settings" class="term-settings-btn" title="Ajustes">[ CONFIG ]</button>
+                <button id="btn-settings" class="term-settings-btn" title="Ajustes" aria-label="Ajustes">
+                    <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="12" cy="12" r="3"></circle>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                    </svg>
+                </button>
                 <span class="control-dot dot-minimize"></span>
                 <span class="control-dot dot-maximize"></span>
                 <span class="control-dot dot-close"></span>
@@ -22,10 +27,10 @@
         <!-- Terminal Splits -->
         <div class="terminal-body" style="grid-template-columns: 1fr;">
             <!-- Main Pane: Command Line and Logs -->
-            <main class="main-pane" style="border-right: none;">
+            <main class="main-pane" style="border-right: none; padding: 10px 20px 20px 20px;">
                 <!-- Main ASCII Logo -->
-                <div id="logoContainer" style="flex-grow: 1; display: flex; align-items: center; justify-content: center;">
-                    <div id="mainLogo" class="log-line log-info" style="font-size: 11px; line-height: 1.2; white-space: pre; text-align: center;">
+                <div id="logoContainer" style="flex: 0 0 auto; display: flex; align-items: center; justify-content: center; padding: 12px 0 14px 0;">
+                    <div id="mainLogo" class="log-line log-info" style="font-size: 10px; line-height: 1.15; white-space: pre; text-align: center; text-shadow: 0 0 12px rgba(0, 242, 254, 0.35);">
 ███╗   ███╗███████╗██████╗ ██╗ █████╗     ██████╗ ██╗     
 ████╗ ████║██╔════╝██╔══██╗██║██╔══██╗    ██╔══██╗██║     
 ██╔████╔██║█████╗  ██║  ██║██║███████║    ██║  ██║██║     
@@ -36,41 +41,126 @@
                 </div>
 
                 <!-- Input command line -->
-                <div class="console-actions" style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 25px; padding: 30px; background: rgba(0,0,0,0.4); border-top: 1px solid var(--border-color);">
-                    <!-- Descarga Rapida -->
-                    <div style="width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; gap: 15px;">
-                        <span style="color: var(--text-secondary); font-size: 13px; font-weight: bold; letter-spacing: 1px;">&gt;_ DESCARGA RAPIDA</span>
-                        <div class="engine-switch-container">
-                            <span id="autoLabel" class="switch-label active-auto">AUTO</span>
-                            <label class="switch">
-                                <input type="checkbox" id="modeSwitch">
-                                <span class="slider"></span>
-                            </label>
-                            <div class="manual-engines" id="manualEngines">
-                                <button class="engine-btn" id="btn-gdl">gallery-dl</button>
-                                <button class="engine-btn" id="btn-yt">yt-dlp</button>
-                            </div>
+                <div class="console-actions" style="flex-grow: 1; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 16px; padding: 20px 25px; background: rgba(0,0,0,0.4); border-top: 1px solid var(--border-color); overflow: hidden;">
+                    
+                    <!-- Selector de Motores (AUTO / gallery-dl / yt-dlp) -->
+                    <div class="engine-switch-container">
+                        <span id="autoLabel" class="switch-label active-auto">AUTO</span>
+                        <label class="switch">
+                            <input type="checkbox" id="modeSwitch">
+                            <span class="slider"></span>
+                        </label>
+                        <div class="manual-engines" id="manualEngines">
+                            <button class="engine-btn" id="btn-gdl">gallery-dl</button>
+                            <button class="engine-btn" id="btn-yt">yt-dlp</button>
                         </div>
-                        <textarea class="console-input" id="consoleInput" placeholder="Pega los enlaces aqu&iacute; (uno por l&iacute;nea)..." autocomplete="off" rows="4" style="resize: vertical; border-radius: 6px; padding: 10px; font-family: monospace; background: rgba(0,0,0,0.5); width: 100%; box-sizing: border-box;"></textarea>
-                        <div style="display: flex; gap: 15px;">
-                            <button class="console-send-btn" id="consoleSendBtn" style="padding: 10px 30px;">DESCARGAR</button>
-                            <button class="console-send-btn clear-btn" id="clearGridBtn" style="padding: 10px; color: var(--term-red); border-color: var(--term-red);" title="Limpiar Terminal">🗑️</button>
-                        </div>
-                        <div id="downloadsGrid" class="downloads-grid hidden"></div>
                     </div>
 
-                    <!-- Archivo TXT -->
-                    <div style="width: 100%; max-width: 800px; display: flex; flex-direction: column; align-items: center; gap: 15px; padding-top: 40px; margin-top: 10px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <span style="color: var(--text-secondary); font-size: 13px; font-weight: bold; letter-spacing: 1px;">&gt;_ DESCARGAR POR LOTES (.TXT)</span>
-                        <div style="display: flex; gap: 15px; align-items: center; justify-content: center; margin-top: 10px;">
-                            <button class="console-send-btn" id="btnSelectTxtFile" style="background: rgba(255,255,255,0.1);">SELECCIONAR ARCHIVO</button>
-                            <span id="txtFileLabel" style="color: var(--text-primary); font-size: 12px; word-break: break-all;">Ning&uacute;n archivo...</span>
+                    <!-- Vista 1: Descarga Rápida -->
+                    <div id="quickSection" class="download-section">
+                        <textarea class="console-input" id="consoleInput" placeholder="Pega los enlaces aqu&iacute; (uno por l&iacute;nea)..." autocomplete="off" rows="6" style="resize: none; border-radius: 8px; padding: 12px 15px; font-family: monospace; background: rgba(0,0,0,0.55); width: 100%; height: 120px; box-sizing: border-box;"></textarea>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="console-send-btn" id="consoleSendBtn" style="padding: 10px 36px; font-weight: bold;">DESCARGAR</button>
+                            <button class="console-send-btn clear-btn" id="clearGridBtn" style="padding: 10px 14px; color: var(--term-red); border-color: var(--term-red);" title="Limpiar Lista">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                            </button>
                         </div>
-                        <div style="display: flex; gap: 15px;">
-                            <button class="console-send-btn" id="consoleTxtBtn" style="padding: 10px 30px;">DESCARGAR</button>
-                            <button class="console-send-btn clear-btn" id="clearGridTxtBtn" style="padding: 10px; color: var(--term-red); border-color: var(--term-red);" title="Limpiar Terminal">🗑️</button>
+                    </div>
+
+                    <!-- Vista 2: Descarga por Lotes (.TXT) -->
+                    <div id="batchSection" class="download-section hidden">
+                        <div class="batch-drop-zone" id="batchDropZone">
+                            <button class="console-send-btn" id="btnSelectTxtFile" type="button" style="padding: 8px 22px; font-size: 12px;">SELECCIONAR ARCHIVO (.TXT)</button>
+                            <span id="txtFileLabel" style="color: var(--text-muted); font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 90%;">Ning&uacute;n archivo seleccionado (.txt)...</span>
                         </div>
-                        <div id="downloadsGridTxt" class="downloads-grid hidden"></div>
+                        <div style="display: flex; gap: 12px;">
+                            <button class="console-send-btn" id="consoleTxtBtn" style="padding: 10px 36px; font-weight: bold;">DESCARGAR</button>
+                            <button class="console-send-btn clear-btn" id="clearGridTxtBtn" style="padding: 10px 14px; color: var(--term-red); border-color: var(--term-red);" title="Limpiar Lista">
+                                <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                    <polyline points="3 6 5 6 21 6"></polyline>
+                                    <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Switch / Selector de Modo (Posición fija constante) -->
+                    <div class="download-mode-switcher" style="margin-top: 4px;">
+                        <button class="mode-tab-btn active" id="tabQuickMode" type="button">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                            Descarga R&aacute;pida
+                        </button>
+                        <button class="mode-tab-btn" id="tabBatchMode" type="button">
+                            <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                            Descarga por Lotes (.TXT)
+                        </button>
+                    </div>
+
+                    <!-- Contenedor Principal de Descargas -->
+                    <div class="downloads-main-wrapper" style="width: 100%; max-width: 800px; position: relative;">
+                        <!-- Grids de Resultados -->
+                        <div id="downloadsGrid" class="downloads-grid hidden" style="width: 100%;"></div>
+                        <div id="downloadsGridTxt" class="downloads-grid hidden" style="width: 100%;"></div>
+
+                        <!-- Recuadro Flotante de Información (Superpuesto por encima al posar el cursor) -->
+                        <div id="taskDetailsPanel" class="floating-task-card hidden">
+                            <div class="floating-task-header">
+                                <div class="floating-header-left">
+                                    <svg viewBox="0 0 24 24" width="13" height="13" stroke="var(--term-cyan)" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="11" cy="11" r="8"></circle>
+                                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                                    </svg>
+                                    <span class="floating-task-title">DETALLES DE LA DESCARGA</span>
+                                </div>
+                                <div id="detailStatusBadge" class="task-status-tag">-</div>
+                            </div>
+                            <div class="floating-task-body">
+                                <div class="task-detail-group">
+                                    <label class="task-detail-label">Archivo / T&iacute;tulo:</label>
+                                    <div class="task-detail-value" id="detailFileName">-</div>
+                                </div>
+
+                                <div class="task-detail-group">
+                                    <div style="display: flex; justify-content: space-between; align-items: baseline;">
+                                        <label class="task-detail-label">Progreso:</label>
+                                        <span id="detailFilesCount" style="font-size: 11px; font-weight: 600; color: var(--term-cyan);">0 / 1</span>
+                                    </div>
+                                    <div class="dl-progress-track" style="margin-top: 2px;">
+                                        <div class="dl-progress-fill" id="detailProgressBar" style="width: 0%;"></div>
+                                        <span class="dl-progress-text" id="detailProgressStat">0 MB / 0 MB</span>
+                                    </div>
+                                </div>
+
+                                <div class="task-detail-group">
+                                    <label class="task-detail-label">Ubicaci&oacute;n de guardado:</label>
+                                    <div class="task-detail-value" id="detailLocationPath" style="font-family: monospace; font-size: 10.5px; opacity: 0.85; word-break: break-all;">-</div>
+                                    <button id="btnOpenDestinationFolder" class="btn-open-folder" type="button">
+                                        <svg viewBox="0 0 24 24" width="13" height="13" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                                        ABRIR CARPETA
+                                    </button>
+                                </div>
+
+                                <!-- Caja explicativa de error (solo visible en fallo) -->
+                                <div class="task-detail-group hidden" id="detailErrorBox">
+                                    <label class="task-detail-label error-label">Causa del problema:</label>
+                                    <div class="task-error-card" id="detailErrorMessage">-</div>
+                                </div>
+
+                                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 4px; border-top: 1px dashed rgba(255,255,255,0.08); font-size: 10.5px;">
+                                    <span style="color: var(--text-muted);">Motor:</span>
+                                    <span id="detailEngineName" style="color: var(--term-cyan); font-weight: 600;">-</span>
+                                </div>
+                            </div>
+                            <!-- Flechita indicadora inferior -->
+                            <div class="floating-card-arrow"></div>
+                        </div>
                     </div>
                 </div>
             </main>
@@ -81,85 +171,167 @@
     <div id="settings-modal" class="modal-backdrop">
         <div class="modal-content">
             <div class="modal-header">
-                <h2 style="color: var(--text-primary); margin: 0;">Ajustes</h2>
-                <button id="btn-close-settings" class="btn-close">&times;</button>
+                <div>
+                    <h2 class="modal-title">Ajustes</h2>
+                    <p class="modal-subtitle">Configuraci&oacute;n de descargas, motores y almacenamiento</p>
+                </div>
+                <button id="btn-close-settings" class="btn-close" title="Cerrar">&times;</button>
             </div>
             
-            <div class="config-editor" style="background: transparent; border: none; padding: 0; margin-top: 20px; max-height: 60vh; overflow-y: auto;">
-                <h3 style="color: var(--accent-blue); margin-bottom: 15px; font-size: 14px; letter-spacing: 1px;">--- OPCIONES GLOBALES ---</h3>
-                
-                <!-- Carpeta Destino -->
-                <div class="config-item">
-                    <span class="config-key">"output_directory":</span>
-                    <div style="display:flex; gap:10px; width:100%">
-                        <input type="text" class="config-input" id="configPath" value="C:\Users\jorge\Downloads\Media" style="flex-grow: 1;">
-                        <button id="btnSelectFolder" class="console-send-btn" style="padding: 0 15px;">ELEGIR...</button>
+            <div class="settings-body">
+                <!-- SECCIÓN 1: ALMACENAMIENTO Y DESCARGAS -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path></svg>
+                        Almacenamiento y Descargas
+                    </div>
+                    
+                    <!-- Carpeta Destino -->
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <label class="setting-label" for="configPath">Carpeta de destino</label>
+                            <span class="setting-desc">Ubicaci&oacute;n donde se guardar&aacute;n los archivos descargados</span>
+                        </div>
+                        <div class="setting-control folder-picker-group">
+                            <input type="text" class="setting-input" id="configPath" value="C:\Users\jorge\Downloads\Media" readonly>
+                            <button id="btnSelectFolder" class="setting-action-btn">Elegir...</button>
+                        </div>
+                    </div>
+
+                    <!-- Descargas Simultáneas -->
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <label class="setting-label" for="configConcurrent">Descargas simult&aacute;neas</label>
+                            <span class="setting-desc">M&aacute;ximo de descargas procesadas en paralelo</span>
+                        </div>
+                        <div class="setting-control concurrent-group">
+                            <select class="setting-select" id="configConcurrent">
+                                <option value="1">1 descarga</option>
+                                <option value="3" selected>3 descargas (Recomendado)</option>
+                                <option value="5">5 descargas</option>
+                                <option value="10">10 descargas</option>
+                                <option value="custom">Personalizado...</option>
+                            </select>
+                            <input type="number" class="setting-input hidden" id="configConcurrentCustom" min="1" max="100" placeholder="Cant.">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Concurrent downloads -->
-                <div class="config-item">
-                    <span class="config-key">"max_concurrent_downloads":</span>
-                    <div style="display:flex; gap:10px; width:100%">
-                        <select class="config-select" id="configConcurrent" style="flex-grow: 1;">
-                            <option value="1">1</option>
-                            <option value="3" selected>3</option>
-                            <option value="5">5</option>
-                            <option value="10">10</option>
-                            <option value="custom">Personalizado...</option>
-                        </select>
-                        <input type="number" class="config-input hidden" id="configConcurrentCustom" min="1" max="100" style="width: 80px;" placeholder="Cant.">
+                <!-- SECCIÓN 2: MODO AUTOMÁTICO -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        Modo Autom&aacute;tico
+                    </div>
+                    
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <label class="setting-label" for="configAutoPriority">Motor prioritario</label>
+                            <span class="setting-desc">Motor que se intentar&aacute; primero al detectar un enlace</span>
+                        </div>
+                        <div class="setting-control">
+                            <select class="setting-select" id="configAutoPriority">
+                                <option value="gallery-dl" selected>gallery-dl (Im&aacute;genes y redes sociales)</option>
+                                <option value="yt-dlp">yt-dlp (Videos y transmisiones)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Actualizaciones -->
-                <div class="config-item">
-                    <span class="config-key">"actualizaciones":</span>
-                    <button id="btnUpdateEngines" class="console-send-btn" style="margin-top: 5px; background: rgba(0,242,254,0.1); border-color: var(--term-cyan);">ACTUALIZAR MOTORES</button>
-                    <span id="updateEnginesStatus" class="config-help" style="color:#aaa; font-size:12px; margin-top:5px; display:block;">Busca e instala las últimas versiones de gallery-dl y yt-dlp</span>
-                </div>
+                <!-- SECCIÓN 3: PREFERENCIAS DE VIDEO -->
+                <div class="settings-section" id="configQualityGroup">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="2" width="20" height="20" rx="2.18" ry="2.18"></rect><line x1="7" y1="2" x2="7" y2="22"></line><line x1="17" y1="2" x2="17" y2="22"></line><line x1="2" y1="12" x2="22" y2="12"></line><line x1="2" y1="7" x2="7" y2="7"></line><line x1="2" y1="17" x2="7" y2="17"></line><line x1="17" y1="17" x2="22" y2="17"></line><line x1="17" y1="7" x2="22" y2="7"></line></svg>
+                        Descarga de Videos (yt-dlp)
+                    </div>
+                    
+                    <!-- Calidad -->
+                    <div class="setting-row">
+                        <div class="setting-info">
+                            <label class="setting-label" for="configQuality">Calidad de video preferida</label>
+                            <span class="setting-desc">Resoluci&oacute;n objetivo por defecto</span>
+                        </div>
+                        <div class="setting-control">
+                            <select class="setting-select" id="configQuality">
+                                <option value="best">M&aacute;xima calidad disponible</option>
+                                <option value="2160p">4K Ultra HD (2160p)</option>
+                                <option value="1440p">2K Quad HD (1440p)</option>
+                                <option value="1080p" selected>Full HD (1080p)</option>
+                                <option value="720p">HD (720p)</option>
+                                <option value="audio">Solo Audio (MP3 / M4A)</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <h3 style="color: var(--accent-blue); margin: 25px 0 15px 0; font-size: 14px; letter-spacing: 1px;">--- MODO AUTOM&Aacute;TICO ---</h3>
-                <!-- Auto Priority -->
-                <div class="config-item">
-                    <span class="config-key">"auto_priority_engine":</span>
-                    <select class="config-select" id="configAutoPriority">
-                        <option value="gallery-dl" selected>"gallery-dl" (Recomendado)</option>
-                        <option value="yt-dlp">"yt-dlp"</option>
-                    </select>
-                </div>
+                    <!-- Subtítulos -->
+                    <div class="setting-row" id="configSubtitlesGroup">
+                        <div class="setting-info">
+                            <label class="setting-label" for="configSubtitles">Subt&iacute;tulos</label>
+                            <span class="setting-desc">Idiomas que se descargar&aacute;n si est&aacute;n disponibles</span>
+                        </div>
+                        <div class="setting-control">
+                            <select class="setting-select" id="configSubtitles">
+                                <option value="none" selected>Sin subt&iacute;tulos</option>
+                                <option value="all">Todos los idiomas disponibles</option>
+                                <option value="es.*,es,es-ES,es-419">Solo Espa&ntilde;ol</option>
+                                <option value="en.*,en">Solo Ingl&eacute;s</option>
+                                <option value="es.*,es,es-ES,es-419,en.*,en">Espa&ntilde;ol e Ingl&eacute;s</option>
+                            </select>
+                        </div>
+                    </div>
 
-                <h3 style="color: var(--accent-blue); margin: 25px 0 15px 0; font-size: 14px; letter-spacing: 1px;">--- GESTOR DE COOKIES ---</h3>
-                <div class="config-item">
-                    <span class="config-key">"master_cookies":</span>
-                    <span class="config-help" style="color:#aaa; font-size:12px;">Los archivos que agregues se concatenar&aacute;n autom&aacute;ticamente y se enviar&aacute;n a los motores.</span>
-                    <button id="btnAddCookie" class="console-send-btn" style="margin-top: 5px;">+ AGREGAR COOKIES (.TXT)</button>
-                    <div id="cookieListContainer" class="cookie-list">
-                        <!-- Cookie items render here -->
+                    <!-- Incrustar subtítulos -->
+                    <div class="setting-row" id="configEmbedSubtitlesGroup">
+                        <div class="setting-info">
+                            <label class="setting-label" for="configEmbedSubtitles">Formato de subt&iacute;tulos</label>
+                            <span class="setting-desc">Modo de integraci&oacute;n de los subt&iacute;tulos</span>
+                        </div>
+                        <div class="setting-control">
+                            <select class="setting-select" id="configEmbedSubtitles">
+                                <option value="true" selected>Incrustar dentro del video</option>
+                                <option value="false">Archivo externo (.srt / .vtt)</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <h3 style="color: var(--accent-blue); margin: 25px 0 15px 0; font-size: 14px; letter-spacing: 1px;">--- CONFIGURACI&Oacute;N YT-DLP ---</h3>
-                <!-- Calidad por Defecto -->
-                <div class="config-item" id="configQualityGroup">
-                    <span class="config-key">"default_quality":</span>
-                    <select class="config-select" id="configQuality">
-                        <option value="best">"best"</option>
-                        <option value="2160p">"2160p (4K)"</option>
-                        <option value="1440p">"1440p (2K)"</option>
-                        <option value="1080p" selected>"1080p (FullHD)"</option>
-                        <option value="720p">"720p (HD)"</option>
-                        <option value="audio">"bestaudio (Solo Audio)"</option>
-                    </select>
+                <!-- SECCIÓN 4: GESTOR DE COOKIES -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></svg>
+                        Sesiones y Cookies
+                    </div>
+                    
+                    <div class="setting-row vertical">
+                        <div class="setting-info">
+                            <label class="setting-label">Archivos de cookies de navegador</label>
+                            <span class="setting-desc">Permite descargar contenido privado o que requiera inicio de sesi&oacute;n mediante archivos .txt</span>
+                        </div>
+                        <button id="btnAddCookie" class="setting-action-btn full-width">+ Agregar archivo de cookies (.txt)</button>
+                        <div id="cookieListContainer" class="cookie-list"></div>
+                    </div>
                 </div>
 
-                <h3 style="color: var(--accent-blue); margin: 25px 0 15px 0; font-size: 14px; letter-spacing: 1px;">--- CONFIGURACI&Oacute;N GALLERY-DL ---</h3>
-                <div class="config-item" id="configGdlGroup">
-                    <span class="config-key">"organization":</span>
-                    <span class="config-help" style="margin-left:10px; color:#aaa; font-size:12px;">Autom&aacute;tica por defecto.</span>
+                <!-- SECCIÓN 5: MANTENIMIENTO Y MOTORES -->
+                <div class="settings-section">
+                    <div class="section-title">
+                        <svg viewBox="0 0 24 24" width="15" height="15" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
+                        Motores de Descarga
+                    </div>
+                    
+                    <div class="setting-row vertical">
+                        <div class="setting-info">
+                            <label class="setting-label">Actualizaci&oacute;n de componentes</label>
+                            <span class="setting-desc">Actualiza gallery-dl y yt-dlp a sus versiones m&aacute;s recientes</span>
+                        </div>
+                        <button id="btnUpdateEngines" class="setting-action-btn btn-update-engines">Buscar y actualizar motores</button>
+                        <span id="updateEnginesStatus" class="update-status-msg"></span>
+                    </div>
                 </div>
+            </div>
 
-                <button class="save-config-btn" id="saveConfigBtn" style="margin-top: 20px;">GUARDAR CONFIG</button>
+            <div class="modal-footer">
+                <button class="save-config-btn" id="saveConfigBtn">Guardar cambios</button>
             </div>
         </div>
     </div>

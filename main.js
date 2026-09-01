@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -11,10 +11,8 @@ function createWindow() {
         resizable: true,
         maximizable: true,
         backgroundColor: '#2a2b2f',
-        
         icon: path.join(__dirname, 'icon.ico'),
         titleBarStyle: 'hidden',
-        
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -25,7 +23,6 @@ function createWindow() {
 
     win.loadFile('public/index.html');
 }
-
 
 ipcMain.on('window:minimize', () => {
     const win = BrowserWindow.getFocusedWindow();
@@ -81,6 +78,25 @@ ipcMain.handle('dialog:openDirectory', async () => {
     } else {
         return filePaths[0];
     }
+});
+
+// Handler to open folder in system file explorer
+ipcMain.handle('open-folder', async (event, folderPath) => {
+    try {
+        if (folderPath && fs.existsSync(folderPath)) {
+            await shell.openPath(folderPath);
+            return true;
+        } else {
+            const fallback = path.join(os.homedir(), 'Downloads');
+            if (fs.existsSync(fallback)) {
+                await shell.openPath(fallback);
+                return true;
+            }
+        }
+    } catch (e) {
+        console.error("Error opening folder:", e);
+    }
+    return false;
 });
 
 // IPC handler for clipboard
@@ -197,13 +213,13 @@ function runProcess(executable, args, id, event, prefix) {
 }
 
 // Unified IPC handler to start a single download item
-ipcMain.on('start-download-item', async (event, { id, link, engine, downloadDir, format, quality, autoPriority }) => {
+ipcMain.on('start-download-item', async (event, { id, link, engine, downloadDir, format, quality, autoPriority, subtitles, embedSubs }) => {
     const ytDlpPath = 'C:\\Users\\jorge\\OneDrive\\Documentos\\Jorge\\Multimedia\\yt-dlp\\yt-dlp.exe';
     const gdlPath = 'C:\\Users\\jorge\\OneDrive\\Documentos\\Jorge\\Multimedia\\Gallery-dl\\gallery-dl-app.exe';
     const gdlConfigPath = 'C:\\Users\\jorge\\OneDrive\\Documentos\\Jorge\\Multimedia\\Gallery-dl\\config1.json';
 
     const getGdlArgs = () => {
-        let args = ['-d', downloadDir, '--config', gdlConfigPath];
+        let args = ['-d', downloadDir, '--config', gdlConfigPath, '--no-check-certificate'];
         if (fs.existsSync(masterCookiesPath)) {
             args.push('--cookies', masterCookiesPath);
         }
@@ -238,6 +254,15 @@ ipcMain.on('start-download-item', async (event, { id, link, engine, downloadDir,
         if (formatArg) {
             args.push('-f', formatArg);
         }
+
+        if (subtitles && subtitles !== 'none') {
+            args.push('--write-subs', '--write-auto-subs');
+            args.push('--sub-langs', subtitles);
+            if (embedSubs !== false && embedSubs !== 'false') {
+                args.push('--embed-subs');
+            }
+        }
+
         args.push(link);
         return args;
     };
@@ -270,7 +295,6 @@ ipcMain.on('start-download-item', async (event, { id, link, engine, downloadDir,
             await runYt();
             if (!finalSuccess && (finalErrorMsg.toLowerCase().includes('unsupported url') || finalErrorMsg.includes('falló'))) {
                 const unsupported = await runGdl(true);
-                // Si falla gallery-dl también, la tarjeta quedará con su error.
             }
         } else {
             // Default Auto (gallery-dl first)
@@ -333,7 +357,7 @@ ipcMain.handle('update-engines', async () => {
     }
 
     try {
-        const gdl = await execPromise(`"${gdlPath}" -U`);
+        const gdl = await execPromise(`"${gdlPath}" -U --no-check-certificate`);
         gdlResult = gdl.stdout + gdl.stderr;
         if (gdlResult.toLowerCase().includes('updated') || gdlResult.toLowerCase().includes('actualizado') || gdlResult.toLowerCase().includes('success') || gdlResult.toLowerCase().includes('installed')) wasUpdated = true;
     } catch (e) {

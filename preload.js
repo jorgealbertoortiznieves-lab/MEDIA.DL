@@ -7,6 +7,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     getPathForFile: (file) => webUtils.getPathForFile(file),
     openFileDialog: () => ipcRenderer.invoke('dialog:openFile'),
     openDirectoryDialog: () => ipcRenderer.invoke('dialog:openDirectory'),
+    openFolder: (folderPath) => ipcRenderer.invoke('open-folder', folderPath),
+
     // Clipboard API
     readClipboard: () => ipcRenderer.invoke('read-clipboard'),
 
@@ -22,5 +24,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     startDownloadItem: (data) => ipcRenderer.send('start-download-item', data),
     onItemLog: (callback) => ipcRenderer.on('item-log', callback),
     onItemStatus: (callback) => ipcRenderer.on('item-status', callback),
-    onItemComplete: (callback) => ipcRenderer.on('item-complete', callback)
+    onItemComplete: (callback) => ipcRenderer.on('item-complete', callback),
+
+    // App Updater
+    updateEngines: () => ipcRenderer.invoke('update-engines')
 });

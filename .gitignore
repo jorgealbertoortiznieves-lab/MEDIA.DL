@@ -1,6 +1,8 @@
-node_modules/
+﻿node_modules/
 dist/
+dist-unpacked/
 .env
-*.bak
-*.old
-twitter.cookies
+*.log
+desktop.ini
+.DS_Store
+Thumbs.db
