@@ -22,37 +22,18 @@ if (!gotTheLock) {
 }
 
 function getTrayPosition() {
-    if (!tray || !mainWindow) return { x: 0, y: 0 };
+    if (!mainWindow) return { x: 0, y: 0 };
     
-    const trayBounds = tray.getBounds();
     const primaryDisplay = screen.getPrimaryDisplay();
     const workArea = primaryDisplay.workArea;
     const [winWidth, winHeight] = mainWindow.getSize();
 
-    // Si los límites del tray son 0, posicionar en la esquina inferior derecha
-    if (!trayBounds || trayBounds.width === 0 || trayBounds.height === 0) {
-        return {
-            x: workArea.x + workArea.width - winWidth - 12,
-            y: workArea.y + workArea.height - winHeight - 12
-        };
-    }
+    // Pegado al borde derecho de la pantalla y encima de la barra de tareas
+    const marginX = 12;
+    const marginY = 8;
 
-    // Posición X (Centrado sobre el icono del tray o contenido en la pantalla)
-    let x = Math.round(trayBounds.x + (trayBounds.width / 2) - (winWidth / 2));
-    if (x + winWidth > workArea.x + workArea.width) {
-        x = workArea.x + workArea.width - winWidth - 12;
-    }
-    if (x < workArea.x) {
-        x = workArea.x + 12;
-    }
-
-    // Posición Y (Encima de la barra de tareas en la esquina inferior)
-    let y;
-    if (trayBounds.y > (workArea.y + (workArea.height / 2))) {
-        y = workArea.y + workArea.height - winHeight - 8;
-    } else {
-        y = workArea.y + 8;
-    }
+    const x = Math.round(workArea.x + workArea.width - winWidth - marginX);
+    const y = Math.round(workArea.y + workArea.height - winHeight - marginY);
 
     return { x, y };
 }
