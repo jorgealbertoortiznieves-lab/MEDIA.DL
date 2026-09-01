@@ -1,46 +1,54 @@
+# MEDIA.DL v2.0
 
-  <h3>GALLERY-DL/YT-DLP UI</h3>
+<div align="center">
+  <h3>Descargador Multimedia en Segundo Plano (System Tray Popover)</h3>
+  <p>Interfaz moderna impulsada por <strong>yt-dlp</strong> y <strong>gallery-dl</strong> para descargas de videos, galerías y audio.</p>
 </div>
 
 ![Screenshot](assets/screenshot.png)
 
-## Descripción
-**MEDIA.DL** es una interfaz gráfica (GUI) para realizar descargas masivas de videos, imágenes y audio desde cientos de sitios web, impulsada por **yt-dlp** y **gallery-dl**.
-
-### ✨ Características Principales
-- **Modo AUTO:** Detección inteligente del enlace para usar el mejor motor disponible.
-- **Gestor de Cookies:** Carga múltiples archivos de cookies (.txt) para descargar contenido de cuentas privadas.
-- **Descargas Simultáneas:** Soporte para descargas en paralelo (1, 3, 5, 10 o personalizado).
-- **Actualizador Integrado:** Busca e instala las últimas versiones de los motores sin salir de la app.
-- **Interfaz Cyberpunk/Neón:** Temas fluidos y alertas de hover modernas.
+## ✨ Características Principales (v2.0)
+- **Acción en Segundo Plano (System Tray):** Aplicación sin presencia en la barra de tareas; permanece activa en la bandeja del sistema junto al reloj y se despliega como ventana emergente al hacer clic.
+- **Lista de Procesos:** Visualización en tiempo real del progreso de descarga, velocidad y peso (`descargado / por descargar`).
+- **Recuadro Flotante de Detalles:** Posicionando el cursor sobre el botón de lupa (`🔍`) de cualquier descarga, se despliega una tarjeta con información detallada y botón para abrir la carpeta en el Explorador de Windows.
+- **Traductor Inteligente de Errores:** Convierte códigos técnicos de fallo (403, 404, cookies, timeout) en explicaciones claras en lenguaje natural.
+- **Modo AUTO:** Detección inteligente del enlace para seleccionar automáticamente el mejor motor (`gallery-dl` o `yt-dlp`).
+- **Descargas por Lotes (.TXT) y Portapapeles:** Soporte para listas de enlaces y drag-and-drop de archivos `.txt`.
+- **Gestor de Cookies:** Carga y administración de múltiples archivos de cookies `.txt` para contenido privado.
+- **Actualizador Integrado:** Comprueba y actualiza los binarios de `yt-dlp` y `gallery-dl` directamente desde los ajustes.
 
 ---
 
-## Instalación
+## 🚀 Instalación y Desarrollo
 
-1. **Clonar o descargar:**
+1. **Clonar el repositorio:**
    ```bash
    git clone https://github.com/jorgealbertoortiznieves-lab/MEDIA.DL.git
    cd MEDIA.DL
    ```
+
 2. **Instalar dependencias:**
    ```bash
    npm install
    ```
-3. **Ejecutar la app en modo desarrollo:**
+
+3. **Ejecutar en modo desarrollo:**
    ```bash
    npm start
    ```
 
+4. **Compilar instaladores / binarios:**
+   ```bash
+   npm run dist
+   ```
+
 ---
 
-## ⚠️ Configuración Obligatoria (Motores)
+## ⚙️ Configuración de Motores (`bin/`)
 
-Esta aplicación es una interfaz gráfica, por lo que **necesita los motores originales para poder descargar**. Si intentas descargar sin ellos, la app te avisará con un error visual.
+Para realizar descargas, coloca los binarios ejecutables correspondientes dentro de la carpeta `bin/`:
 
-Para habilitar las descargas, debes crear una carpeta llamada `bin/` en la raíz del proyecto y colocar allí los ejecutables:
+1. **yt-dlp**: Descarga `yt-dlp.exe` desde su [repositorio oficial](https://github.com/yt-dlp/yt-dlp/releases) y colócalo en `bin/`.
+2. **gallery-dl**: Descarga `gallery-dl-app.exe` desde su [repositorio oficial](https://github.com/mikf/gallery-dl/releases) y colócalo en `bin/`.
 
-1. **yt-dlp**: Descarga `yt-dlp.exe` desde su [repositorio oficial](https://github.com/yt-dlp/yt-dlp/releases) y colócalo en la carpeta `bin/`.
-2. **gallery-dl**: Descarga `gallery-dl-app.exe` (el binario de Windows) desde su [repositorio oficial](https://github.com/mikf/gallery-dl/releases) y colócalo en la carpeta `bin/`.
-
-> **Nota:** La aplicación autogenerará un archivo `config1.json` básico en la carpeta `bin/` si detecta que falta al usar gallery-dl.
+> **Nota:** La aplicación autogenerará la configuración base `config1.json` en `bin/` si no existe.
