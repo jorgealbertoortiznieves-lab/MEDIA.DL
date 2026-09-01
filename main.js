@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, dialog, shell, Tray, Menu, Notification } = require('electron');
+const { app, BrowserWindow, ipcMain, dialog, shell, Tray, Menu, Notification, screen } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const os = require('os');
@@ -7,6 +7,7 @@ const { spawn, exec } = require('child_process');
 let mainWindow = null;
 let tray = null;
 let isQuitting = false;
+let isDialogOpen = false;
 
 // Bloqueo de instancia única para evitar múltiples procesos duplicados
 const gotTheLock = app.requestSingleInstanceLock();
@@ -15,22 +16,81 @@ if (!gotTheLock) {
 } else {
     app.on('second-instance', () => {
         if (mainWindow) {
-            if (mainWindow.isMinimized()) mainWindow.restore();
-            mainWindow.show();
-            mainWindow.focus();
+            showTrayWindow();
         }
     });
 }
 
+function getTrayPosition() {
+    if (!tray || !mainWindow) return { x: 0, y: 0 };
+    
+    const trayBounds = tray.getBounds();
+    const primaryDisplay = screen.getPrimaryDisplay();
+    const workArea = primaryDisplay.workArea;
+    const [winWidth, winHeight] = mainWindow.getSize();
+
+    // Si los límites del tray son 0, posicionar en la esquina inferior derecha
+    if (!trayBounds || trayBounds.width === 0 || trayBounds.height === 0) {
+        return {
+            x: workArea.x + workArea.width - winWidth - 12,
+            y: workArea.y + workArea.height - winHeight - 12
+        };
+    }
+
+    // Posición X (Centrado sobre el icono del tray o contenido en la pantalla)
+    let x = Math.round(trayBounds.x + (trayBounds.width / 2) - (winWidth / 2));
+    if (x + winWidth > workArea.x + workArea.width) {
+        x = workArea.x + workArea.width - winWidth - 12;
+    }
+    if (x < workArea.x) {
+        x = workArea.x + 12;
+    }
+
+    // Posición Y (Encima de la barra de tareas en la esquina inferior)
+    let y;
+    if (trayBounds.y > (workArea.y + (workArea.height / 2))) {
+        y = workArea.y + workArea.height - winHeight - 8;
+    } else {
+        y = workArea.y + 8;
+    }
+
+    return { x, y };
+}
+
+function showTrayWindow() {
+    if (!mainWindow) return;
+    const { x, y } = getTrayPosition();
+    mainWindow.setPosition(x, y, false);
+    mainWindow.show();
+    mainWindow.focus();
+}
+
+function hideTrayWindow() {
+    if (mainWindow && mainWindow.isVisible()) {
+        mainWindow.hide();
+    }
+}
+
+function toggleTrayWindow() {
+    if (!mainWindow) return;
+    if (mainWindow.isVisible()) {
+        hideTrayWindow();
+    } else {
+        showTrayWindow();
+    }
+}
+
 function createWindow() {
     mainWindow = new BrowserWindow({
-        width: 600,
-        height: 900,
-        resizable: true,
-        maximizable: true,
-        backgroundColor: '#2a2b2f',
+        width: 480,
+        height: 720,
+        show: false, // Inicia oculta en segundo plano (System Tray)
+        skipTaskbar: true, // NUNCA aparece en la barra de tareas
+        frame: false,
+        resizable: false,
+        alwaysOnTop: true,
+        backgroundColor: '#0c0b16',
         icon: path.join(__dirname, 'icon.ico'),
-        titleBarStyle: 'hidden',
         webPreferences: {
             preload: path.join(__dirname, 'preload.js'),
             contextIsolation: true,
@@ -49,6 +109,13 @@ function createWindow() {
             return false;
         }
     });
+
+    // Ocultar al hacer clic fuera (blur) salvo que haya un diálogo abierto
+    mainWindow.on('blur', () => {
+        if (!isQuitting && !isDialogOpen && mainWindow.isVisible()) {
+            mainWindow.hide();
+        }
+    });
 }
 
 function createTray() {
@@ -62,26 +129,20 @@ function createTray() {
 
     const contextMenu = Menu.buildFromTemplate([
         {
-            label: 'MEDIA.DL v2.0',
+            label: 'MEDIA.DL v2.0 (Segundo Plano)',
             enabled: false
         },
         { type: 'separator' },
         {
             label: 'Abrir MEDIA.DL',
             click: () => {
-                if (mainWindow) {
-                    if (mainWindow.isMinimized()) mainWindow.restore();
-                    mainWindow.show();
-                    mainWindow.focus();
-                }
+                showTrayWindow();
             }
         },
         {
-            label: 'Ocultar en Segundo Plano',
+            label: 'Ocultar',
             click: () => {
-                if (mainWindow) {
-                    mainWindow.hide();
-                }
+                hideTrayWindow();
             }
         },
         { type: 'separator' },
@@ -105,35 +166,21 @@ function createTray() {
     tray.setToolTip('MEDIA.DL v2.0 - Activo en segundo plano');
     tray.setContextMenu(contextMenu);
 
-    // Clic izquierdo: Alternar visibilidad
+    // Clic izquierdo / Doble clic: Alternar despliegue en la esquina de la bandeja
     tray.on('click', () => {
-        if (!mainWindow) return;
-        if (mainWindow.isVisible()) {
-            mainWindow.hide();
-        } else {
-            if (mainWindow.isMinimized()) mainWindow.restore();
-            mainWindow.show();
-            mainWindow.focus();
-        }
+        toggleTrayWindow();
     });
 
-    // Doble clic: Abrir y enfocar
     tray.on('double-click', () => {
-        if (!mainWindow) return;
-        if (mainWindow.isMinimized()) mainWindow.restore();
-        mainWindow.show();
-        mainWindow.focus();
+        showTrayWindow();
     });
 }
 
 ipcMain.on('window:minimize', () => {
-    if (mainWindow) mainWindow.minimize();
+    if (mainWindow) mainWindow.hide();
 });
 ipcMain.on('window:maximize', () => {
-    if (mainWindow) {
-        if (mainWindow.isMaximized()) mainWindow.unmaximize();
-        else mainWindow.maximize();
-    }
+    // En modo tray popover no se maximiza a pantalla completa, mantiene tamaño compacto
 });
 ipcMain.on('window:close', () => {
     if (mainWindow) mainWindow.hide();
@@ -147,8 +194,7 @@ app.whenReady().then(() => {
         if (BrowserWindow.getAllWindows().length === 0) {
             createWindow();
         } else if (mainWindow) {
-            mainWindow.show();
-            mainWindow.focus();
+            showTrayWindow();
         }
     });
 });
@@ -166,25 +212,35 @@ app.on('window-all-closed', () => {
 
 // Dialog handlers
 ipcMain.handle('dialog:openFile', async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-        properties: ['openFile'],
-        filters: [{ name: 'Text Files', extensions: ['txt'] }]
-    });
-    if (canceled) {
-        return null;
-    } else {
-        return filePaths[0];
+    isDialogOpen = true;
+    try {
+        const { canceled, filePaths } = await dialog.showOpenDialog({
+            properties: ['openFile'],
+            filters: [{ name: 'Text Files', extensions: ['txt'] }]
+        });
+        if (canceled) {
+            return null;
+        } else {
+            return filePaths[0];
+        }
+    } finally {
+        setTimeout(() => { isDialogOpen = false; }, 300);
     }
 });
 
 ipcMain.handle('dialog:openDirectory', async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-        properties: ['openDirectory']
-    });
-    if (canceled) {
-        return null;
-    } else {
-        return filePaths[0];
+    isDialogOpen = true;
+    try {
+        const { canceled, filePaths } = await dialog.showOpenDialog({
+            properties: ['openDirectory']
+        });
+        if (canceled) {
+            return null;
+        } else {
+            return filePaths[0];
+        }
+    } finally {
+        setTimeout(() => { isDialogOpen = false; }, 300);
     }
 });
 
